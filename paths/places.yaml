@@ -1,4 +1,5 @@
 get:
+  summary: /uk/places.json
   description: |
     **(1 hit)**
 
@@ -8,7 +9,6 @@ get:
     flexible API endpoint. This includes transport stop points for bus, train, tube etc. as well as non-transport
     related results such as postcodes and names of towns/villages/streets and points of interest.
   parameters:
-    - $ref: '../parameters.yaml#/app_id'
     - name: query
       in: query
       schema:
@@ -24,6 +24,7 @@ get:
         type: array
         items:
           $ref: '../parameters/places.yaml#/placeType'
+        uniqueItems: true
       description: |
         A set of types to limit the search results to. The default is to match on all types. The set of possible match
         types are currently as follows:
@@ -77,8 +78,10 @@ get:
               request_time:
                 $ref: '../parameters.yaml#/request_time'
               source:
+                type: string
                 description: Short names of the data sources
               acknowledgements:
+                type: string
                 description: Longer description and acknowledgement text (including URLs) crediting the data sources
               id:
                 $ref: '../pagination.yaml#/id'
@@ -100,12 +103,14 @@ get:
                     type:
                       $ref: '../parameters/places.yaml#/placeType'
                     name:
+                      type: string
                       description: >
                         A short name for the search match, suitable for prominent display, however it may not be unique
                         within the result set. For postcodes, this is a cleaned up version of the postcode (capitalised
                         and with a space inserted at the normal place)
                       example: Euston station
                     description:
+                      type: string
                       description: >
                         A longer textual description providing extended information (extension of the name). When
                         present, this may be supplying important context or identifying detail which may be required by
@@ -145,6 +150,7 @@ get:
                         `null`
                       example: 5510WDB47543
                     station_code:
+                      type: string
                       description: >
                         3-Alpha code for the station (See 'train station references' section) Returned only for
                         type=train_station matches
@@ -152,8 +158,10 @@ get:
                       maxLength: 3
                       example: WES
                     tiploc_code:
+                      type: string
                       description: Unique TIPLOC station codes. Returned only for type=train_station matches
                     osm_id:
+                      type: string
                       description: >
                         The OpenStreetMap element type ('node'/'way'/'relation') followed by a colon ':' char followed
                         by the OpenStreetMap numeric id if the object. This is enough to uniquely reference an object

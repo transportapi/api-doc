@@ -17,13 +17,6 @@ coordinates:
       example: -0.27970
 
 # Parameters
-app_id:
-  name: app_id
-  in: query
-  schema:
-    type: string
-  required: true
-  description: Your TransportAPI app_id
 page:
   name: page
   in: query

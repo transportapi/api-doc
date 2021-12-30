@@ -1,0 +1,9 @@
+# Parameter schemas
+mode:
+  enum:
+    - bus
+    - train
+    - tube
+    - tram
+    - boat
+  example: bus

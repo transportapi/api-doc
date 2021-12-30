@@ -1,0 +1,301 @@
+get:
+  summary: /uk/journey_planner.json
+  description: |
+    **(10 hits)**
+
+    Plans a route between two locations via public transport. Returns a multi-modal journey plan
+  parameters:
+    - name: from
+      in: query
+      schema:
+        type: string
+      description: >
+        The location from which the route starts.
+
+        You might typically call the 'places' endpoint to find suitable coordinates for use in this parameter.
+        [Read more on location referencing](#location_referencing) for format description.
+      example: lonlat:-0.134649,51.529258
+    - name: to
+      in: query
+      schema:
+        type: string
+      description: >
+        The location to which the route leads.
+
+        You might typically call the 'places' endpoint to find suitable coordinates for use in this parameter.
+        [Read more on location referencing](#location_referencing) for format description.
+      example: lonlat:-0.088780,51.506383
+    - name: journey_time_type
+      in: query
+      schema:
+        type: string
+        enum:
+          - leave_after
+          - arrive_by
+        default: leave_after
+      description: |
+        * `leave_after` - look for the next journey that departs at or after the specified date/time
+        * `arrive_by` - look for the last journey that arrives by or before the specified date/time
+      example: at
+    - name: date
+      in: query
+      schema:
+        type: string
+        format: date
+      description: |
+        The date of interest.
+
+        Defaults to today's date if not specified
+      example: 2014-11-20
+    - name: time
+      in: query
+      schema:
+        type: string
+        pattern: '^\d{2}:\d{2}$'
+      description: >
+        The time of interest.
+
+
+        Defaults to current time if not specified
+      example: 19:45
+    - name: service
+      in: query
+      schema:
+        type: string
+      description: |
+        Specifies which backend system journey planner service should be used.
+         * `tfl` - use Transport For London's journey planner which will only work in and around London, and some
+        interchange destinations around the country
+         * `silverrail` - use Silverrail's journey planner which covers the whole UK, but the queries run more slowly
+      example: tfl
+    - name: modes
+      in: query
+      schema:
+        type: array
+        items:
+          $ref: '../parameters/journey_planner.yaml#/mode'
+        uniqueItems: true
+      description: |
+        Restricts the transport modes which can be used for routing to only the ones provided by this parameter.
+
+        Leave out the parameter to allow all modes
+      example:
+        - bus
+        - train
+        - boat
+    - name: not_modes
+      in: query
+      schema:
+        type: array
+        items:
+          $ref: '../parameters/journey_planner.yaml#/mode'
+        uniqueItems: true
+      description: |
+        Restricts the transport modes which can be used for routing to all modes except the ones provided by this
+        parameter.
+
+        Leave out the parameter to allow all modes
+      example:
+        - bus
+        - train
+        - boat
+  responses:
+    '200':
+      description: Public journey planning response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              request_time:
+                $ref: '../parameters.yaml#/request_time'
+              source:
+                type: string
+                description: Short description of the data source
+              acknowledgements:
+                type: string
+                description: The journey planning provider
+              routes:
+                description: A set of alternative routes for the request
+                type: array
+                items:
+                  type: object
+                  required:
+                    - duration
+                    - departure_time
+                    - arrival_time
+                    - route_parts
+                    - distance
+                    - distance_desc
+                  properties:
+                    duration:
+                      type: string
+                      format: '^\d{2}:\d{2}:\d{2}$'
+                      description: Duration of the entire journey in hh:mm:ss format
+                    departure_time:
+                      type: string
+                      format: '^\d{2}:\d{2}$'
+                    departure_datetime:
+                      type: string
+                      format: date-time
+                    arrival_time:
+                      type: string
+                      format: '^\d{2}:\d{2}$'
+                    arrival_datetime:
+                      type: string
+                      format: date-time
+                    distance:
+                      type: integer
+                      description: measured in meters
+                    distance_desc:
+                      type: string
+                      description: textual represenetation in imperial units, rounded
+                    route_parts:
+                      description: >
+                        An array of journey legs. Passengers need to change to a new transport mode or new vehicle,
+                        e.g. from one train to another at a station, between each of these journey legs
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - mode
+                          - from_point_name
+                          - to_point_name
+                          - destination
+                          - duration
+                          - departure_time
+                          - arrival_time
+                          - coordinates
+                          - distance
+                          - distance_desc
+                        properties:
+                          mode:
+                            type: string
+                            enum:
+                              - foot
+                              - tube
+                              - dlr
+                              - bus
+                              - tram
+                              - train
+                              - overground
+                              - boat
+                              - metro
+                              - wait
+                              - unknown
+                            description: |
+                              The transport mode type. `wait` indicates significant length of time waiting. `unknown`
+                              means a mode which does not fit in mentioned modes
+                          line_name:
+                            type: string
+                            description: The name of the line
+                          from_point:
+                            $ref: '../responses/journey_planner.yaml#/point'
+                          to_point:
+                            $ref: '../responses/journey_planner.yaml#/point'
+                          destination_point:
+                            $ref: '../responses/journey_planner.yaml#/point'
+                          from_point_name:
+                            type: string
+                            description: A short textual name (e.g. station name) where this journey leg starts
+                          to_point_name:
+                            type: string
+                            description: A short textual name (e.g. station name) where this journey leg ends
+                          destination:
+                            type: string
+                            description: >
+                              Where the vehicle is heading to. This can be displayed to help passengers tell which
+                              train/bus to catch. It is the terminating destination which is often shown on the front
+                              of vehicles. The station/stop mentioned here may form part of the route, or the passenger
+                              may need to get off earlier (at the station/stop given in the to_point_name)
+                          departure_time:
+                            type: string
+                            format: '^\d{2}:\d{2}$'
+                            description: >
+                              The departure time for this journey leg. This may be the same or a few minutes after the
+                              arrival_time of the previous journey leg (a short wait).
+                          departure_datetime:
+                            type: string
+                            format: date-time
+                          arrival_time:
+                            type: string
+                            format: '^\d{2}:\d{2}$'
+                            description: >
+                              The arrival time for this journey leg
+                          arrival_datetime:
+                            type: string
+                            format: date-time
+                          service:
+                            type: object
+                            required:
+                              - id
+                            properties:
+                              id:
+                                type: string
+                                nullable: true
+                          duration:
+                            type: string
+                            format: '^\d{2}:\d{2}:\d{2}$'
+                            description: Duration of this journey leg
+                          coordinates:
+                            description: >
+                              An array of coordinates for the journey leg, allowing the route to be plotted as a
+                              polyline on a map
+                            type: array
+                            items:
+                              description: >
+                                An array with two elements: a longitude and latitude in geoJSON format
+                              type: array
+                              items:
+                                type: number
+                              minItems: 2
+                              maxItems: 2
+                          distance:
+                            type: integer
+                            description: measured in meters
+                          distance_desc:
+                            type: string
+                            description: textual represenetation in imperial units, rounded
+          example:
+            request_time: '2021-04-28T14:50:44+01:00'
+            source: TfL journey planning API
+            acknowledgements: Transport for London
+            routes:
+              - duration: '00:23:00'
+                departure_time: '17:56'
+                arrival_time: '18:19'
+                distance: 1153
+                distance_desc: 1260 yards
+                route_parts:
+                  - mode: tube
+                    from_point_name: Euston
+                    to_point_name: Green Park
+                    destination: Brixton
+                    duration: '00:05:00'
+                    departure_time: '17:56'
+                    arrival_time: '18:01'
+                    coordinates:
+                      - [-0.13208, 51.52811]
+                      - [-0.13701, 51.52622]
+                    distance: 100
+                    distance_desc: 109 yards
+                  - mode: foot
+                    from_point_name: Westminster
+                    to_point_name: Downing Street, Westminster
+                    destination: ''
+                    duration: '00:12:00'
+                    departure_time: '18:07'
+                    arrival_time: '18:19'
+                    coordinates:
+                      - [-0.12607, 51.50125]
+                      - [-0.12612, 51.50125]
+                    distance: 1053
+                    distance_desc: 1151 yards
+    '400':
+      $ref: '../responses.yaml#/badRequest'
+    '401':
+      $ref: '../responses.yaml#/unauthorised'
+    '403':
+      $ref: '../responses.yaml#/forbidden'
+    '422':
+      $ref: '../responses.yaml#/unprocessableEntity'

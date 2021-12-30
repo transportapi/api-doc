@@ -1,0 +1,31 @@
+point:
+  type: object
+  required:
+    - place
+  properties:
+    place:
+      type: object
+      nullable: true
+      required:
+        - type
+        - name
+        - latitude
+        - longitude
+      properties:
+        type:
+          type: string
+          enum:
+            - train_station
+            - bus_stop
+            - tram_stop
+            - tube_station
+        name:
+          type: string
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180

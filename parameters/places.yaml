@@ -1,5 +1,6 @@
 # Parameter schemas
 placeType:
+  type: string
   enum:
     - train_station
     - bus_stop

@@ -1,0 +1,12 @@
+# Parameter schemas
+placeType:
+  enum:
+    - train_station
+    - bus_stop
+    - tram_stop
+    - tube_station
+    - settlement
+    - street
+    - poi
+    - postcode
+  example: train_station

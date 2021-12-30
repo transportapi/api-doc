@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: TransportAPI
+  version: v3
+  contact:
+    email: support@transportapi.com
+  description: |-
+    <h1 id="location_referencing">Location referencing for journey planning</h1>
+
+    Geographic locations in the journey planning endpoints should be referenced in the form **lonlat:_coordinates_**
+    where **_coordinates_** should be a valid numeric longitude and latitude pair in
+    [WGS84 format](http://en.wikipedia.org/wiki/World_Geodetic_System)
+    separated by a comma such as "lonlat:-0.13182,51.52788".
+
+    You might typically make a prior call to the 'places' endpoint to find suitable coordinates for this e.g. if you
+    wish to plan a journey between two named train stations.
+
+    Alternatively you can use postcodes in the form **postcode:_postcode_** where **_postcode_** should be a valid
+    postcode within the UK, for example "postcode:EC2A+4JE".
+
+    Bear in mind that regular URL encoding should be applied to these params. Spaces can be substituted with "+" or
+    "%20".
+servers:
+  - url: 'https://transportapi.com/v3'
+paths:
+  /uk/places.json:
+    $ref: "./paths/places.yaml"
+  /uk/public_journey.json:
+    $ref: "./paths/journey-planner.yaml"
+components:
+  securitySchemes:
+    app_key:
+      name: app_key
+      type: apiKey
+      in: query
+      description: Your TransportAPI app_key
+  responses: {}
+security:
+  - app_key: []

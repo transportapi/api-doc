@@ -1,0 +1,78 @@
+# Parameter schemas
+coordinates:
+  type: object
+  required:
+    - lat
+    - lon
+  properties:
+    lat:
+      type: number
+      minimum: -90
+      maximum: 90
+      example: 51.55597
+    lon:
+      type: number
+      minimum: -180
+      maximum: 180
+      example: -0.27970
+
+# Parameters
+app_id:
+  name: app_id
+  in: query
+  schema:
+    type: string
+  required: true
+  description: Your TransportAPI app_id
+page:
+  name: page
+  in: query
+  schema:
+    type: integer
+    default: 1
+    minimum: 1
+  description: which page of results to return
+limit:
+  name: limit
+  in: query
+  schema:
+    type: integer
+    minimum: 1
+  description: how many results at most to return
+request_time:
+  type: string
+  format: date-time
+  description: The time of the request
+
+bounding_box:
+  name: bounding_box
+  description: bounding box
+  in: query
+  schema:
+    type: object
+    required:
+      - min_lat
+      - min_lon
+      - max_lat
+      - max_lon
+    properties:
+      min_lat:
+        type: number
+        minimum: -90
+        maximum: 90
+        example: 51.2482
+      max_lat:
+        type: number
+        minimum: -90
+        maximum: 90
+        example: 51.7287
+      min_lon:
+        type: number
+        minimum: -180
+        maximum: 180
+        example: -0.5823
+      max_lon:
+        type: number
+        minimum: -180
+        maximum: 180
+        example: 0.3049

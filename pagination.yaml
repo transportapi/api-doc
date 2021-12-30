@@ -1,0 +1,31 @@
+id:
+  type: string
+  format: uri
+  description: The URL of the requested resource
+view:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uri
+      description: The URL of the requested page
+    page:
+      type: integer
+      minimum: 1
+      description: The current page number
+    page_size:
+      type: integer
+      minimum: 1
+      description: The number of results in one page
+    previous:
+      type: string
+      format: uri
+      description: The URL of the previous page
+    next:
+      type: string
+      format: uri
+      description: The URL of the next page
+  required:
+    - id
+    - page
+    - page_size

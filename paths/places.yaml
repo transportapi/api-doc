@@ -1,0 +1,204 @@
+get:
+  description: |
+    **(1 hit)**
+
+    The Places endpoint is in alpha testing, and may be subject to change
+
+    Places are a generic name for various types of geo-located search results which can be retrieved via this single
+    flexible API endpoint. This includes transport stop points for bus, train, tube etc. as well as non-transport
+    related results such as postcodes and names of towns/villages/streets and points of interest.
+  parameters:
+    - $ref: '../parameters.yaml#/app_id'
+    - name: query
+      in: query
+      schema:
+        type: string
+      description: |
+        Query text for performing a text matching search. Search results will include 'fuzzy' matches for similar
+        spellings. The query text can be arbitrary input from the user (perhaps from a search box). Use standard
+        [URL encoding](https://en.wikipedia.org/wiki/Percent-encoding)
+      example: wembley
+    - name: type
+      in: query
+      schema:
+        type: array
+        items:
+          $ref: '../parameters/places.yaml#/placeType'
+      description: |
+        A set of types to limit the search results to. The default is to match on all types. The set of possible match
+        types are currently as follows:
+          * `train_station` - A search within our transport data for the name of the train station
+          * `bus_stop` - A search within our transport data for the name of bus stop station (These are often named
+            after streets/towns and so will match many search queries)
+          * `tram_stop` - A search within our transport data for the name of the tram stop
+          * `tube_station` - A search within our transport data for the name of the tube station
+          * `settlement` - Map data geocoding match for a city/town/village/suburb/neighbourhood
+          * `street` - Map data geocoding match for a street (Note this can result in some postcode matches for known
+            streets within postcodes)
+          * `poi` - Map data geocoding match for a point of interest. Th is intended to be limited to significant
+            places of interest (POIs) which are more likely to be a regular destination used by tourists for example
+          * `postcode` - A postcode lookup. Currently this will only match a full UK postcode, but works with any
+            spacing or case
+
+        We may add new search match types in future and these would likely be included by default (when we return all
+        types)
+      example:
+        - bus_stop
+        - tube_station
+    - name: focal_point
+      in: query
+      description: focal point of a geographic nearby search
+      schema:
+        $ref: '../parameters.yaml#/coordinates'
+    - $ref: '../parameters.yaml#/bounding_box'
+    - name: bus_service
+      in: query
+      schema:
+        type: string
+      description: only return bus stops that are part of this bus service
+      example: 11
+    - $ref: '../parameters.yaml#/page'
+    - $ref: '../parameters.yaml#/limit'
+  responses:
+    '200':
+      description: Places response
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - request_time
+              - source
+              - acknowledgements
+              - id
+              - view
+              - member
+            properties:
+              request_time:
+                $ref: '../parameters.yaml#/request_time'
+              source:
+                description: Short names of the data sources
+              acknowledgements:
+                description: Longer description and acknowledgement text (including URLs) crediting the data sources
+              id:
+                $ref: '../pagination.yaml#/id'
+              view:
+                $ref: '../pagination.yaml#/view'
+              member:
+                description: >
+                  A set of places (search results). The array is of variable length, depending on how specific your
+                  query was. A zero length array is returned if there were no matches
+                type: array
+                items:
+                  type: object
+                  required:
+                    - type
+                    - name
+                    - latitude
+                    - longitude
+                  properties:
+                    type:
+                      $ref: '../parameters/places.yaml#/placeType'
+                    name:
+                      description: >
+                        A short name for the search match, suitable for prominent display, however it may not be unique
+                        within the result set. For postcodes, this is a cleaned up version of the postcode (capitalised
+                        and with a space inserted at the normal place)
+                      example: Euston station
+                    description:
+                      description: >
+                        A longer textual description providing extended information (extension of the name). When
+                        present, this may be supplying important context or identifying detail which may be required by
+                        a user to make sense of a search result. For example you might find several settlements with
+                        the same name, but the descriptions will tell us which part of the country each of the search
+                        results are in
+                    latitude:
+                      type: number
+                      description: >
+                        latitude of the place. Accuracy of positioning will vary depending on the type (and data
+                        source used for that type). For wide area places such as settlements these coordinates will be
+                        placed centrally
+                      minimum: -90
+                      maximum: 90
+                      example: 51.55597
+                    longitude:
+                      type: number
+                      description: >
+                        longitude of the place. Accuracy of positioning will vary depending on the type (and data
+                        source used for that type). For wide area places such as settlements these coordinates will be
+                        placed centrally
+                      minimum: -180
+                      maximum: 180
+                      example: -0.27970
+                    distance:
+                      type: integer
+                      description: >
+                        The distance in metres from the specified focal point. Optional field only present when a focal
+                        point is specified
+                      example: 101
+                    atcocode:
+                      type: string
+                      nullable: true
+                      description: >
+                        Bus stop identifier (See 'bus information' section). Returned only for type=bus_stop,
+                        type=tube_station and type=train_station matches. In the case of train stations it could be
+                        `null`
+                      example: 5510WDB47543
+                    station_code:
+                      description: >
+                        3-Alpha code for the station (See 'train station references' section) Returned only for
+                        type=train_station matches
+                      minLength: 3
+                      maxLength: 3
+                      example: WES
+                    tiploc_code:
+                      description: Unique TIPLOC station codes. Returned only for type=train_station matches
+                    osm_id:
+                      description: >
+                        The OpenStreetMap element type ('node'/'way'/'relation') followed by a colon ':' char followed
+                        by the OpenStreetMap numeric id if the object. This is enough to uniquely reference an object
+                        within OpenStreetMap's database. Note that cross-referencing with the OSM database in this way
+                        will always come with a (usually small) risk that the OSM database ids have changed. We return
+                        this field only for matches coming directly from OpenStreetMap data (settlements, streets, and
+                        places of interest). We don't currently return OSM ids for other place types such as train
+                        stations
+          example:
+            request_time: '2021-04-28T14:50:44+01:00'
+            source: Network Rail, NaPTAN, Traveline TNDS, O.S. (CodePoint), OpenStreetMap
+            acknowledgements: >
+              Contains information of Network Rail Infrastructure Limited. License
+              http://www.networkrail.co.uk/data-feeds/terms-and-conditions/, Contains DfT NaPTAN bus stops data,
+              Contains DfT NaPTAN tube station data, Bus routes data from Traveline, Ordance Survey Open Data
+              (CodePoint postcodes), OpenStreetMap data licensed ODbL http://opendatacommons.org/licenses/odbl/
+            id: https://transportapi.com/v3/uk/places.json?query=wembley
+            view:
+              id: https://transportapi.com/v3/uk/places.json?query=wembley&page=1
+              page: 1
+              page_size: 10
+              next: https://transportapi.com/v3/uk/places.json?query=wembley&page=2
+            member:
+              - type: bus_stop
+                name: Wembley High Road (W-bound)
+                description: Wembley
+                latitude: 51.55351
+                longitude: -0.2918
+                atcocode: 490014378M
+                distance: 880
+              - type: bus_stop
+                name: Wembley Central (W-bound)
+                description: Wembley
+                latitude: 51.55212
+                longitude: -0.29763
+                atcocode: 490000256H
+                distance: 1311
+              - type: tube_station
+                name: North Wembley
+                description: North Wembley
+                latitude: 51.56255
+                longitude: -0.304
+                atcocode: 9400ZZLUNWY
+                distance: 1832
+    '401':
+       $ref: '../responses.yaml#/unauthorised'
+    '403':
+      $ref: '../responses.yaml#/forbidden'

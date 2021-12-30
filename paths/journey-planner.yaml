@@ -1,0 +1,113 @@
+get:
+  description: |
+    **(10 hits)**
+
+    Plans a route between two locations via public transport. Returns a multi-modal journey plan
+  parameters:
+    - $ref: '../parameters.yaml#/app_id'
+    - name: from
+      in: query
+      schema:
+        type: string
+      description: >
+        The location from which the route starts.
+
+        You might typically call the 'places' endpoint to find suitable coordinates for use in this parameter.
+        [Read more on location referencing](#location_referencing) for format description.
+      example: lonlat:-0.134649,51.529258
+    - name: to
+      in: query
+      schema:
+        type: string
+      description: >
+        The location to which the route leads.
+
+        You might typically call the 'places' endpoint to find suitable coordinates for use in this parameter.
+        [Read more on location referencing](#location_referencing) for format description.
+      example: lonlat:-0.088780,51.506383
+    - name: type
+      in: query
+      schema:
+        type: string
+        enum:
+          - at
+          - by
+      description: |
+        * `at` - look for the next journey that departs at or after the specified date/time
+        * `by` - look for the last journey that arrives by or before the specified date/time
+      example: at
+    - name: date
+      in: query
+      schema:
+        type: string
+        format: date
+      description: |
+        The date of interest.
+
+        Defaults to today's date if not specified
+      example: 2014-11-20
+    - name: time
+      in: query
+      schema:
+        type: string
+        pattern: '^\d{2}:\d{2}$'
+      description: >
+        The time of interest.
+
+
+        Defaults to current time if not specified
+      example: 19:45
+    - name: service
+      in: query
+      schema:
+        type: string
+      description: |
+        Specifies which backend system journey planner service should be used.
+         * `tfl` - use Transport For London's journey planner which will only work in and around London, and some
+        interchange destinations around the country
+         * `silverrail` - use Silverrail's journey planner which covers the whole UK, but the queries run more slowly
+      example: tfl
+    - name: modes
+      in: query
+      schema:
+        type: string
+      description: |
+        Restricts the transport modes which can be used for routing to only the ones provided by this parameter.
+
+        Should be a hyphen separated list of some or all of the available modes which are: 'bus', 'train', 'tube' and
+        'boat'
+
+        Leave out the parameter to allow all modes
+      examples:
+        single:
+          value: train
+        multiple:
+          value: bus-train-boat
+    - name: not_modes
+      in: query
+      schema:
+        type: string
+      description: |
+        Restricts the transport modes which can be used for routing to all modes except the ones provided by this
+        parameter.
+
+        Should be a hyphen separated list of some or all of the available modes which are: 'bus', 'train', 'tube' and
+        'boat'
+
+        Leave out the parameter to allow all modes
+      examples:
+        single:
+          value: train
+        multiple:
+          value: bus-train-boat
+  responses:
+    '200':
+      $ref: '../responses/journey-planner.yaml#/success'
+    '400':
+      $ref: '../responses.yaml#/badRequest'
+    '401':
+      $ref: '../responses.yaml#/unauthorised'
+    '403':
+      $ref: '../responses.yaml#/forbidden'
+    '422':
+      $ref: '../responses.yaml#/unprocessableEntity'

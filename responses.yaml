@@ -1,0 +1,34 @@
+badRequest:
+  content:
+    $ref: '#/errorContent'
+  description: Bad request
+
+unauthorised:
+  content:
+    $ref: '#/errorContent'
+  description: Requires valid 3scale credentials to access but the user hasn't provided such
+
+forbidden:
+  content:
+    $ref: '#/errorContent'
+  description: >
+    * The user has provided valid 3scale credentials but the usage limits on that 3scale application plan for that
+      endpoint have been exceeded
+    * The user has provided valid 3scale credentials but is trying to access an enterprise cluster designated for a
+      client organisation the user is not part of
+    * The user has provided valid 3scale credentials but is trying to access a server which accepts connections only
+      from an IP whitelist and the user isn't part of that list
+
+unprocessableEntity:
+  content:
+    $ref: '#/errorContent'
+  description: Can't be processed because it contains semantic or other errors
+
+errorContent:
+  application/json:
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          description: error message
